@@ -7,21 +7,20 @@ import java.net.*;
 import java.util.Scanner;
 
 /*
-  Main server control
-  On init will initialize DataController then will
-  initialize the Operator Console Thread then
-  will initialize the domains given via args (if any)
-  using google's Dynamic Domain IP A.P.I.
+  Main Server Control
+      Order of Initialization
+         -DataController
+         -Operator Console Thread then
+         -Domains given via args (if any)
   After Initializing These three things the program will then Wait for in coming connections on port 80.
  */
 public class ServerControl
 {
 
     private ServerSocket webServer;
-    private final ClientTimer serverInt = new ClientTimer(5000, new ComponentsListener());
-    //EveryHour Renew Domain Name Servers
-    private final ClientTimer domainInt = new ClientTimer(3600000, new ComponentsListener());
-    private final ClientTimer fiveMin = new ClientTimer(300000, new ComponentsListener());
+    private final ClientTimer serverInt = new ClientTimer(5000, new ComponentsListener());//Five Second Timer
+    private final ClientTimer domainInt = new ClientTimer(3600000, new ComponentsListener());//One Hour Timer
+    private final ClientTimer fiveMin = new ClientTimer(300000, new ComponentsListener());//Five Minute Timer
     private static Thread commandThread;
     private int count = 0;
     private int startUpTries = 5;

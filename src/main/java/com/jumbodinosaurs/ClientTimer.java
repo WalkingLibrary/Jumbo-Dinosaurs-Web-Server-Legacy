@@ -5,29 +5,29 @@ import java.awt.event.ActionListener;
 
 public class ClientTimer extends Timer
 {
-    private static boolean stoped;
+    private static boolean stopped;
     public ClientTimer(int num, ActionListener listener)
     {
         super (num, listener);
-        stoped = false;
+        stopped = false;
     }
 
     public void start()
     {
-        stoped = false;
+        stopped = false;
         super.start();
     }
 
     public void stop()
     {
-        stoped = true;
+        stopped = true;
         super.stop();
     }
 
     //if true then not running
     public boolean getStatus()
     {
-        return stoped;
+        return stopped;
     }
 
 }
