@@ -24,7 +24,7 @@ public class Main
     private static ServerControl controler;
     public static void main(String[] args)
     {
-        if(args.length % 3 == 0)
+        if(!(args.length == 0) && (args.length % 3 == 0))
         {
             String[][] credentials = new String[args.length / 3][2];
             String[] domains = new String[args.length / 3];

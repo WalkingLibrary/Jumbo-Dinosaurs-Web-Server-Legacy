@@ -1,5 +1,6 @@
 package com.jumbodinosaurs;
 
+import javax.net.ssl.SSLServerSocket;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -12,12 +13,12 @@ import java.util.Scanner;
          -DataController
          -Operator Console Thread then
          -Domains given via args (if any)
-  After Initializing These three things the program will then Wait for in coming connections on port 80.
+  After Initializing These three things the program will then Wait for incoming connections on port 80.
  */
 public class ServerControl
 {
 
-    private ServerSocket webServer;
+    private static ServerSocket webServer;
     private final ClientTimer serverInt = new ClientTimer(5000, new ComponentsListener());//Five Second Timer
     private final ClientTimer domainInt = new ClientTimer(3600000, new ComponentsListener());//One Hour Timer
     private final ClientTimer fiveMin = new ClientTimer(300000, new ComponentsListener());//Five Minute Timer
@@ -49,9 +50,9 @@ public class ServerControl
             }
             catch (Exception e)
             {
-                System.out.println("Error Accepting Client");
-                e.printStackTrace();
-                System.out.println(e.getCause());
+                    System.out.println("Error Accepting Client");
+                    e.printStackTrace();
+                    System.out.println(e.getCause());
             }
         }
         System.exit(2);
@@ -64,9 +65,9 @@ public class ServerControl
         this.domains = domains;
         this.domainsInit = new boolean[this.credentials.length];
         this.dataIO = new DataController(this.domains);
-        this.intServer();
         this.domainInt.start();
-        intDomain();
+        this.intDomain();
+        this.intServer();
         while(this.webServer != null)
         {
             try
@@ -80,13 +81,18 @@ public class ServerControl
             }
             catch (Exception e)
             {
-                System.out.println("Error Accepting Client");
-                e.printStackTrace();
-                System.out.println(e.getCause());
+                if(!e.toString().contains("socket closed"))//Avoid Socket Closed Exceptions cluttering screen
+                {
+                    System.out.println("Error Accepting Client");
+                    e.printStackTrace();
+                    System.out.println(e.getCause());
+                }
             }
         }
         System.exit(2);
     }
+
+
 
     private void intDomain()
     {
@@ -107,6 +113,7 @@ public class ServerControl
                         this.credentials[i][1] +
                         " " +
                         this.domains[i]);
+
                 File wgetOutput = new File(System.getProperty("user.dir") + "/renew.txt");
                 System.out.println("wgetOutput Path: " + wgetOutput.getPath());
 
@@ -136,6 +143,7 @@ public class ServerControl
                     break;
                 }
             }
+
             if (allInit)
             {
                 System.out.println("Domain Initialized");
@@ -153,7 +161,7 @@ public class ServerControl
         }
         catch (Exception e)
         {
-             System.out.println("Error Setting Up DNS");
+             System.out.println("Error Setting Up Initializing Domain(s)");
              e.printStackTrace();
              System.out.println(e.getCause());
         }
@@ -168,7 +176,7 @@ public class ServerControl
         {
             if(this.commandThread == null)
             {
-                Runnable userInput = new OperatorConsole(this.dataIO);
+                Runnable userInput = new OperatorConsole(this.dataIO, this);
                 this.commandThread = new Thread(userInput);
                 this.commandThread.start();
             }
@@ -184,6 +192,29 @@ public class ServerControl
             e.printStackTrace();
             System.out.println(e.getCause());
             this.serverInt.start();
+        }
+    }
+
+
+    public void refreshSocket()
+    {
+        try
+        {
+            if(!this.webServer.equals(null))
+            {
+                this.webServer.close();
+                System.out.println("Socket Closed");
+
+            }
+            this.webServer = new ServerSocket(80);
+            System.out.println("Socket Refreshed");
+
+        }
+        catch(Exception e)
+        {
+             System.out.println("Error Refreshing Socket");
+             e.printStackTrace();
+             System.out.println(e.getCause());
         }
     }
 
@@ -207,6 +238,7 @@ public class ServerControl
             else if(e.getSource().equals(domainInt))
             {
                 intDomain();
+                refreshSocket();
             }
             else if(e.getSource().equals(fiveMin))
             {

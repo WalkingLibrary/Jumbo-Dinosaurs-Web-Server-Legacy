@@ -144,13 +144,16 @@ public class HTTPRequest
     public String getHostedDomainPathHomePage(DataController dataIO)
     {
         String hostHead = "Host: ";
-        for(String host: dataIO.getDomains())
+        if(dataIO.getDomains() != null)
         {
-            if(this.message.contains(hostHead + host))
+            for (String host : dataIO.getDomains())
             {
-                //TO BE MENDED IN THE FUTURE. All Hosted domains at this time are www.something.com
-                //indexOF(".") safe cause it's operator input
-                return "/" + host.substring(host.indexOf(".") + 1,host.lastIndexOf(".")) + "/home.html";
+                if (this.message.contains(hostHead + host))
+                {
+                    //TO BE MENDED IN THE FUTURE. All Hosted domains at this time are www.something.com
+                    //indexOF(".") safe cause it's operator input
+                    return "/" + host.substring(host.indexOf(".") + 1, host.lastIndexOf(".")) + "/home.html";
+                }
             }
         }
         return null;
@@ -160,13 +163,16 @@ public class HTTPRequest
     public String addDomainPathfromHost(DataController dataIO, String fileRequested)
     {
         String hostHead = "Host: ";
-        for(String host: dataIO.getDomains())
+        if(dataIO.getDomains() != null)
         {
-            if(this.message.contains(hostHead + host))
+            for (String host : dataIO.getDomains())
             {
-                //TO BE MENDED IN THE FUTURE. All Hosted domains at this time are www.something.com
-                //indexOF(".") safe cause it's operator input
-                return "/" + host.substring(host.indexOf(".") + 1,host.lastIndexOf(".")) + fileRequested;
+                if (this.message.contains(hostHead + host))
+                {
+                    //TO BE MENDED IN THE FUTURE. All Hosted domains at this time are www.something.com
+                    //indexOF(".") safe cause it's operator input
+                    return "/" + host.substring(host.indexOf(".") + 1, host.lastIndexOf(".")) + fileRequested;
+                }
             }
         }
         return fileRequested;

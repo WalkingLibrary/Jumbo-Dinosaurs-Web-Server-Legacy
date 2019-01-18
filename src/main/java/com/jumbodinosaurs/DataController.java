@@ -3,6 +3,7 @@ package com.jumbodinosaurs;
 
 import com.google.gson.*;
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -19,7 +20,7 @@ public class DataController implements Runnable
     private String[] domains;
     private static ArrayList<Session> sessionsToLog = new ArrayList<Session>();
     private static SessionLogger logger;
-
+    private String host = "";
 
 
     public DataController()
@@ -30,7 +31,8 @@ public class DataController implements Runnable
             System.out.println(this.allowedDirectory.getAbsolutePath());
             this.logs = checkFor(this.allowedDirectory.getParentFile(), "LOG");
             this.imageJsonDir = checkFor(this.allowedDirectory.getParentFile(), "ImageJson");
-            this.makeSiteIndexand404Page();
+            this.setHost();
+            this.makeSiteIndexand404PageDefault();
             this.init();
         }
         catch (Exception e)
@@ -50,7 +52,8 @@ public class DataController implements Runnable
             this.logs = checkFor(this.allowedDirectory.getParentFile(), "LOG");
             this.imageJsonDir = checkFor(this.allowedDirectory.getParentFile(), "ImageJson");
             this.domains = domains;
-            this.makeSiteIndexand404Page();
+            this.setHost();
+            this.makeSiteIndexand404PageDomains();
             this.init();
         }
         catch (Exception e)
@@ -86,6 +89,31 @@ public class DataController implements Runnable
 
     }
 
+    private void setHost()
+    {
+        try
+        {
+            URL address = new URL("http://bot.whatismyipaddress.com");
+
+            BufferedReader sc = new BufferedReader(new InputStreamReader(address.openStream()));
+
+            this.host = sc.readLine().trim();
+            System.out.println("Public IP: " + this.host);
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error Setting Host");
+            e.printStackTrace();
+            System.out.println(e.getCause());
+        }
+    }
+
+
+    public String getHost()
+    {
+        return this.host;
+    }
+
 
 
     public void log(Session session)
@@ -94,10 +122,71 @@ public class DataController implements Runnable
     }
 
 
+    public void makeSiteIndexand404PageDefault()
+    {
+        try
+        {
+            File pageIndex = this.checkFor(this.allowedDirectory,"index.html");
+            PrintWriter output = new PrintWriter(pageIndex);
+            String indexHTML = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "<style>\n" +
+                    "body\n" +
+                    "{\n" +
+                    "    background-color: lightgreen;\n" +
+                    "}\n" +
+                    "</style>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "<h4>\n" +
+                    "Sites<br>";
+            for (File file: this.listFilesRecursive(this.allowedDirectory))
+            {
+                indexHTML += "<a href = http://" + this.host + "/"+ file.getName() + ">" + this.host + "/"+ file.getName() + "</a><br>";
+            }
+
+            indexHTML += "</h4>\n" +
+                    "</body>\n" +
+                    "</html>";
+            output.write(indexHTML);
+            output.close();
+
+            File page404 = this.checkFor(this.allowedDirectory, "404.html");
+            output = new PrintWriter(page404);
+
+            String HTML404 = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "<style>\n" +
+                    "body\n" +
+                    "{\n" +
+                    "    background-color: lightgreen;\n" +
+                    "}\n" +
+                    "</style>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "<h1>\n" +
+                    "404 - File has Either Been Moved or Relocated\n" +
+                    "</h1>\n" +
+                    "<a href = \"http://" + this.host + "/index.html\">Index</a>\n" +
+                    "</body>\n" +
+                    "</html>";
+            output.write(HTML404);
+            output.close();
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            System.out.println("Error Creating Index and 404 Page");
+        }
+    }
 
 
 
-    public void makeSiteIndexand404Page()
+
+    public void makeSiteIndexand404PageDomains()
     {
         try
         {
@@ -351,17 +440,35 @@ public class DataController implements Runnable
         File[] filesInAllowedDir = this.listFilesRecursive(this.allowedDirectory);
         //If count is greater than 1 might have duplicate files and could be a problem
         int count = 0;
+
+        //Try with given slashes to find file
         for (File file : filesInAllowedDir)
         {
-            if (file.getAbsolutePath().indexOf(fileWanted) > -1)//MAKE SURE FILES NAMED THE SAME HAVE DIFFERENT PARENTS FOLDERS
+            int indexOfFileWanted = file.getAbsolutePath().indexOf(fileWanted);
+            int lengthOfAbsolutePath = file.getAbsolutePath().length();
+            if (indexOfFileWanted > -1 && indexOfFileWanted + fileWanted.length() == lengthOfAbsolutePath)//MAKE SURE FILES NAMED THE SAME HAVE DIFFERENT PARENT FOLDERS
             {
                 fileToGive = file;
                 count++;
             }
         }
-        if(fileToGive != null)
+        if (fileToGive != null)
         {
             System.out.println("File Retrieved: " + fileToGive.getAbsolutePath());
+        }
+        else// invert slashes and try to find file
+        {
+            String invertedWanted = this.invertSlashes(fileWanted);
+            for (File file : filesInAllowedDir)
+            {
+                int indexOfFileWanted = file.getAbsolutePath().indexOf(invertedWanted);
+                int lengthOfAbsolutePath = file.getAbsolutePath().length();
+                if (indexOfFileWanted > -1 && indexOfFileWanted + invertedWanted.length() == lengthOfAbsolutePath)//MAKE SURE FILES NAMED THE SAME HAVE DIFFERENT PARENT FOLDERS
+                {
+                    fileToGive = file;
+                    count++;
+                }
+            }
         }
         if (count > 1)
         {
@@ -390,6 +497,29 @@ public class DataController implements Runnable
             System.out.println(e.getCause());
         }
         return fileRequestedContents;
+    }
+
+    //Cycles thru the given string and if there are any forward slashes or backward slashes it will invert them
+    public String invertSlashes(String str)
+    {
+        String invertedStr = str;
+        for(int i = 0; i < str.length() - 1; i++)
+        {
+            if(invertedStr.substring(i, i + 1).contains("/")
+                    || invertedStr.substring(i, i+ 1).contains("\\"))
+            {
+                if(invertedStr.substring(i, i + 1).contains("/"))
+                {
+                    invertedStr = invertedStr.substring(0,i) + "\\" + invertedStr.substring(i + 1);
+                }
+                else if(invertedStr.substring(i, i+ 1).contains("\\"))
+                {
+                    invertedStr = invertedStr.substring(0, i) + "/" + invertedStr.substring(i + 1);
+                }
+            }
+
+        }
+        return invertedStr;
     }
 
     public String getPictureContents(String pictureName)
@@ -477,12 +607,12 @@ public class DataController implements Runnable
 
     public boolean nameSafe(String fileName)
     {
-        if (fileName.indexOf("\\..") < 0)
+        if (fileName.contains("\\..") || fileName.contains("//.."))
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     /* @Function: Checks for the String name in the given Dir of File file
