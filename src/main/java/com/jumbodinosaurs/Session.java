@@ -18,7 +18,7 @@ public class Session
     private transient ClientTimer timeOut = new ClientTimer(2500, new ComponentsListener());
 
 
-    public Session(Socket client)throws Exception
+    public Session(Socket client) throws Exception
     {
         this.who = client.getInetAddress().getHostAddress();
         this.when = new Date().toString();
@@ -33,7 +33,7 @@ public class Session
 
         //If there is info to read
         this.timeOut.start();//To avoid one request takeing way to long
-        while(this.input.available() > 0 || this.message.equals("") && !this.timeOut.getStatus())
+        while (this.input.available() > 0 || this.message.equals("") && !this.timeOut.getStatus())
         {
             temp = this.input.read();
             line = "" + (char) temp;
@@ -50,7 +50,7 @@ public class Session
         this.messageSent = messageSent;
     }
 
-    public void sendByteArray(byte[] bytes)throws Exception
+    public void sendByteArray(byte[] bytes) throws Exception
     {
         this.output.write(bytes);
     }
@@ -96,7 +96,7 @@ public class Session
     {
         public void actionPerformed(ActionEvent e)
         {
-            if(e.getSource().equals(timeOut))
+            if (e.getSource().equals(timeOut))
             {
                 timeOut.stop();
             }

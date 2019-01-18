@@ -11,6 +11,7 @@ public class SessionLogger implements Runnable
 {
     private static ArrayList<Session> sessions;
     private static DataController dataIO;
+
     public SessionLogger(DataController dataIO)
     {
         this.dataIO = dataIO;
@@ -27,7 +28,7 @@ public class SessionLogger implements Runnable
     {
         try
         {
-            while(true)
+            while (true)
             {
                 if (this.sessions.size() > 0)
                 {
@@ -40,14 +41,14 @@ public class SessionLogger implements Runnable
                 {
                     Thread.sleep(1000);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
 
                 }
 
             }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             e.printStackTrace();
             System.out.println("Error Logging Session");
@@ -55,67 +56,67 @@ public class SessionLogger implements Runnable
     }
 
 
-        public void log(Session session)
-        {
-            //GSON Objects for writeing and dealing with json
-            GsonBuilder builder = new GsonBuilder();
-            builder.setPrettyPrinting();
-            Gson gson = builder.create();
-            JsonParser parser = new JsonParser();
+    public void log(Session session)
+    {
+        //GSON Objects for writeing and dealing with json
+        GsonBuilder builder = new GsonBuilder();
+        builder.setPrettyPrinting();
+        Gson gson = builder.create();
+        JsonParser parser = new JsonParser();
 
+        try
+        {
+            //File with log json
+            File logFile = this.dataIO.checkFor(this.dataIO.getLogsDir(), "logs.json");
+            //Read in log json
+            Scanner logIn = new Scanner(logFile);
+            String fileContents = "";
+            while (logIn.hasNextLine())
+            {
+                fileContents += logIn.nextLine();
+            }
+            logIn.close();
+
+            //try parsing file with json parser
+            JsonElement element = null;
             try
             {
-                //File with log json
-                File logFile = this.dataIO.checkFor(this.dataIO.getLogsDir(), "logs.json");
-                //Read in log json
-                Scanner logIn = new Scanner(logFile);
-                String fileContents = "";
-                while (logIn.hasNextLine())
-                {
-                    fileContents += logIn.nextLine();
-                }
-                logIn.close();
-
-                //try parsing file with json parser
-                JsonElement element = null;
-                try
-                {
-                    element = parser.parse(fileContents);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                    System.out.println("Error Parsing Json");
-                }
-                JsonObject sessionList = new JsonObject();
-                //If file already has contents
-                if (element != null &&
-                        element.isJsonObject() &&
-                        element.getAsJsonObject().getAsJsonArray("loglist") != null &&
-                        element.getAsJsonObject().getAsJsonArray("loglist").isJsonArray())
-                {
-                    System.out.println("LOGS IS JSON");
-                    //Just add session
-                    sessionList = element.getAsJsonObject();
-                    sessionList.getAsJsonObject().getAsJsonArray("loglist").add(gson.toJson(session, Session.class));
-                }
-                else
-                {
-                    System.out.println("LOGS IS NOT JSON");
-                    //else make new loglist and add session
-                    sessionList.add("loglist", new JsonArray());
-                    sessionList.getAsJsonArray("loglist").add(gson.toJson(session, Session.class));
-                }
-                //write contents of sessionlist to logFile and close()
-                PrintWriter logOut = new PrintWriter(logFile);
-                logOut.write(sessionList.toString());
-                logOut.close();
+                element = parser.parse(fileContents);
             }
             catch (Exception e)
             {
-                System.out.println("Error Writing to Logs");
                 e.printStackTrace();
-                System.out.println(e.getCause());
+                System.out.println("Error Parsing Json");
             }
+            JsonObject sessionList = new JsonObject();
+            //If file already has contents
+            if (element != null &&
+                    element.isJsonObject() &&
+                    element.getAsJsonObject().getAsJsonArray("loglist") != null &&
+                    element.getAsJsonObject().getAsJsonArray("loglist").isJsonArray())
+            {
+                System.out.println("LOGS IS JSON");
+                //Just add session
+                sessionList = element.getAsJsonObject();
+                sessionList.getAsJsonObject().getAsJsonArray("loglist").add(gson.toJson(session, Session.class));
+            }
+            else
+            {
+                System.out.println("LOGS IS NOT JSON");
+                //else make new loglist and add session
+                sessionList.add("loglist", new JsonArray());
+                sessionList.getAsJsonArray("loglist").add(gson.toJson(session, Session.class));
+            }
+            //write contents of sessionlist to logFile and close()
+            PrintWriter logOut = new PrintWriter(logFile);
+            logOut.write(sessionList.toString());
+            logOut.close();
         }
+        catch (Exception e)
+        {
+            System.out.println("Error Writing to Logs");
+            e.printStackTrace();
+            System.out.println(e.getCause());
+        }
+    }
 }

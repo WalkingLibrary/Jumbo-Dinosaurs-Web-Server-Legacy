@@ -22,28 +22,29 @@ import java.util.Scanner;
 public class Main
 {
     private static ServerControl controler;
+
     public static void main(String[] args)
     {
-        if(!(args.length == 0) && (args.length % 3 == 0))
+        if (!(args.length == 0) && (args.length % 3 == 0))
         {
             String[][] credentials = new String[args.length / 3][2];
             String[] domains = new String[args.length / 3];
             int rotation = 0;
-            for(int i = 0; i < args.length; i++)
+            for (int i = 0; i < args.length; i++)
             {
-                if(i % 3 == 0 && i != 0)
+                if (i % 3 == 0 && i != 0)
                 {
                     rotation++;
                 }
-                if(i % 3 == 0)
+                if (i % 3 == 0)
                 {
                     credentials[rotation][0] = args[i];
                 }
-                else if(i % 3 == 1)
+                else if (i % 3 == 1)
                 {
                     credentials[rotation][1] = args[i];
                 }
-                else if(i % 3 == 2)
+                else if (i % 3 == 2)
                 {
                     domains[rotation] = args[i];
                 }
@@ -62,7 +63,7 @@ public class Main
             Scanner userInput = new Scanner(System.in);
             System.out.println("Start Server without a Domain? Y/N");
             String response = userInput.next();
-            if(response.toLowerCase().contains("y") || response.toLowerCase().contains("yes"))
+            if (response.toLowerCase().contains("y") || response.toLowerCase().contains("yes"))
             {
                 controler = new ServerControl();
             }

@@ -6,9 +6,10 @@ import java.awt.event.ActionListener;
 public class ClientTimer extends Timer
 {
     private static boolean stopped;
+
     public ClientTimer(int num, ActionListener listener)
     {
-        super (num, listener);
+        super(num, listener);
         stopped = false;
     }
 

@@ -4,13 +4,6 @@ import java.io.File;
 
 public class HTTPRequest
 {
-    private String message, messageToSend;
-    private String pictureContents = "";
-    private Boolean pictureRequest = false;
-
-
-
-
     //Status Codes
     private final String sC100 = "HTTP/1.1 100 Continue";
     private final String sC200 = "HTTP/1.1 200 OK";
@@ -22,12 +15,14 @@ public class HTTPRequest
     private final String sC403 = "HTTP/1.1 403 Forbidden";
     private final String sC404 = "HTTP/1.1 404 Not Found";
     private final String sC501 = "HTTP/1.1 501 Not Implemented";
-
     //headers
     private final String keepAlive = "\r\nConnection: keep-alive\r\n\n";
     private final String closeHeader = " \r\nConnection: Close\r\n\n";
     private final String acceptedLanguageHeader = "\r\nAccept-Language: en-US";
     private final String originHeader = "\r\nOrigin: http://www.jumbodinosaurs.com/";
+    private String message, messageToSend;
+    private String pictureContents = "";
+    private Boolean pictureRequest = false;
     private String contentTextHeader = "\r\nContent-Type: text/";
     private String contentImageHeader = "\r\nContent-Type: image/";
     private String contentLengthHeader = "\r\nContent-Length: "; //[length in bytes of the image]\r\n
@@ -45,17 +40,17 @@ public class HTTPRequest
 
     public boolean isHTTP()
     {
-        return  this.message.indexOf(" HTTP/1.1") > -1;
+        return this.message.indexOf(" HTTP/1.1") > -1;
     }
 
     public void generateMessage(DataController dataIO)
     {
         //If Get Request
-        if(isGet())
+        if (isGet())
         {
             //Clean Name from get Request for dataIO
             String requestCheck = this.getGetRequest();
-            if(requestCheck != null)
+            if (requestCheck != null)
             {
                 String fileToGet = this.mendPageRequest(requestCheck, dataIO);
 
@@ -127,11 +122,10 @@ public class HTTPRequest
     }
 
 
-
     public boolean hasHostHeader()
     {
         String hostHead = "Host: ";
-        if(this.message.contains(hostHead))
+        if (this.message.contains(hostHead))
         {
             return true;
         }
@@ -144,7 +138,7 @@ public class HTTPRequest
     public String getHostedDomainPathHomePage(DataController dataIO)
     {
         String hostHead = "Host: ";
-        if(dataIO.getDomains() != null)
+        if (dataIO.getDomains() != null)
         {
             for (String host : dataIO.getDomains())
             {
@@ -163,7 +157,7 @@ public class HTTPRequest
     public String addDomainPathfromHost(DataController dataIO, String fileRequested)
     {
         String hostHead = "Host: ";
-        if(dataIO.getDomains() != null)
+        if (dataIO.getDomains() != null)
         {
             for (String host : dataIO.getDomains())
             {
@@ -184,7 +178,7 @@ public class HTTPRequest
     // if no host header and the request if not "/"
     public String mendPageRequest(String request, DataController dataIO)
     {
-        if(!request.contains("index.html"))
+        if (!request.contains("index.html"))
         {
             if (request.equals("/"))
             {
@@ -212,7 +206,7 @@ public class HTTPRequest
 
     public String getGetRequest()
     {
-        if(this.message.indexOf("GET ") > -1 &&
+        if (this.message.indexOf("GET ") > -1 &&
                 this.message.indexOf(" HTTP/1.1") > -1 &&
                 this.message.indexOf("GET") + 4 < this.message.indexOf(" HTTP/1.1"))
         {
@@ -233,8 +227,6 @@ public class HTTPRequest
     {
         return this.pictureContents;
     }
-
-
 
 
     public String getMessageToSend()

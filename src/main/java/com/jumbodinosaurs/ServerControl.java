@@ -1,10 +1,10 @@
 package com.jumbodinosaurs;
 
-import javax.net.ssl.SSLServerSocket;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Scanner;
 
 /*
@@ -19,17 +19,16 @@ public class ServerControl
 {
 
     private static ServerSocket webServer;
+    private static Thread commandThread;
+    private static DataController dataIO;
     private final ClientTimer serverInt = new ClientTimer(5000, new ComponentsListener());//Five Second Timer
     private final ClientTimer domainInt = new ClientTimer(3600000, new ComponentsListener());//One Hour Timer
     private final ClientTimer fiveMin = new ClientTimer(300000, new ComponentsListener());//Five Minute Timer
-    private static Thread commandThread;
     private int count = 0;
     private int startUpTries = 5;
     private String[][] credentials;
     private String[] domains;
     private boolean[] domainsInit;
-    private static DataController dataIO;
-
 
 
     public ServerControl()
@@ -37,7 +36,7 @@ public class ServerControl
         System.out.println("Starting Jumbo Dinosaurs .1");
         this.dataIO = new DataController();
         this.intServer();
-        while(this.webServer != null)
+        while (this.webServer != null)
         {
             try
             {
@@ -50,9 +49,9 @@ public class ServerControl
             }
             catch (Exception e)
             {
-                    System.out.println("Error Accepting Client");
-                    e.printStackTrace();
-                    System.out.println(e.getCause());
+                System.out.println("Error Accepting Client");
+                e.printStackTrace();
+                System.out.println(e.getCause());
             }
         }
         System.exit(2);
@@ -68,7 +67,7 @@ public class ServerControl
         this.domainInt.start();
         this.intDomain();
         this.intServer();
-        while(this.webServer != null)
+        while (this.webServer != null)
         {
             try
             {
@@ -81,7 +80,7 @@ public class ServerControl
             }
             catch (Exception e)
             {
-                if(!e.toString().contains("socket closed"))//Avoid Socket Closed Exceptions cluttering screen
+                if (!e.toString().contains("socket closed"))//Avoid Socket Closed Exceptions cluttering screen
                 {
                     System.out.println("Error Accepting Client");
                     e.printStackTrace();
@@ -93,7 +92,6 @@ public class ServerControl
     }
 
 
-
     private void intDomain()
     {
         try
@@ -102,12 +100,12 @@ public class ServerControl
             //First try to tell google domains to update with sh script
             //read from renew.txt for code from google
             //if code is a success status code then domain is initiated else start a 5 min timer to try again in 5 min
-            for(int i = 0; i < this.credentials.length; i++)
+            for (int i = 0; i < this.credentials.length; i++)
             {
 
                 //https://username:password@domains.google.com/nic/update?hostname=subdomain.yourdomain.com
                 //Credentials Should be in Username Password Domain order
-                 Runtime.getRuntime().exec("sudo bash reNewDomain.sh " +
+                Runtime.getRuntime().exec("sudo bash reNewDomain.sh " +
                         this.credentials[i][0] +
                         " " +
                         this.credentials[i][1] +
@@ -135,9 +133,9 @@ public class ServerControl
             }
 
             boolean allInit = true;
-            for(boolean isInited: this.domainsInit)
+            for (boolean isInited : this.domainsInit)
             {
-                if(!isInited)
+                if (!isInited)
                 {
                     allInit = false;
                     break;
@@ -149,7 +147,7 @@ public class ServerControl
                 System.out.println("Domain Initialized");
                 this.fiveMin.stop();
             }
-            else if(this.fiveMin.getStatus())
+            else if (this.fiveMin.getStatus())
             {
                 System.out.println("A Domain Failed To Initialize Starting 5 Min Timer");
                 this.fiveMin.start();
@@ -161,9 +159,9 @@ public class ServerControl
         }
         catch (Exception e)
         {
-             System.out.println("Error Setting Up Initializing Domain(s)");
-             e.printStackTrace();
-             System.out.println(e.getCause());
+            System.out.println("Error Setting Up Initializing Domain(s)");
+            e.printStackTrace();
+            System.out.println(e.getCause());
         }
     }
 
@@ -174,14 +172,14 @@ public class ServerControl
     {
         try
         {
-            if(this.commandThread == null)
+            if (this.commandThread == null)
             {
                 Runnable userInput = new OperatorConsole(this.dataIO, this);
                 this.commandThread = new Thread(userInput);
                 this.commandThread.start();
             }
             this.webServer = new ServerSocket(80);
-            if(!this.serverInt.getStatus())
+            if (!this.serverInt.getStatus())
             {
                 this.serverInt.stop();
             }
@@ -200,7 +198,7 @@ public class ServerControl
     {
         try
         {
-            if(!this.webServer.equals(null))
+            if (!this.webServer.equals(null))
             {
                 this.webServer.close();
                 System.out.println("Socket Closed");
@@ -210,11 +208,11 @@ public class ServerControl
             System.out.println("Socket Refreshed");
 
         }
-        catch(Exception e)
+        catch (Exception e)
         {
-             System.out.println("Error Refreshing Socket");
-             e.printStackTrace();
-             System.out.println(e.getCause());
+            System.out.println("Error Refreshing Socket");
+            e.printStackTrace();
+            System.out.println(e.getCause());
         }
     }
 
@@ -222,25 +220,25 @@ public class ServerControl
     {
         public void actionPerformed(ActionEvent e)
         {
-            if(e.getSource().equals(serverInt))
+            if (e.getSource().equals(serverInt))
             {
-                if(count < 5)
+                if (count < 5)
                 {
                     intServer();
                     count++;
                 }
-                else if(count > 5)
+                else if (count > 5)
                 {
                     System.out.println("Tried " + startUpTries + " Times and Failed");
                     System.exit(1);
                 }
             }
-            else if(e.getSource().equals(domainInt))
+            else if (e.getSource().equals(domainInt))
             {
                 intDomain();
                 refreshSocket();
             }
-            else if(e.getSource().equals(fiveMin))
+            else if (e.getSource().equals(fiveMin))
             {
                 intDomain();
             }

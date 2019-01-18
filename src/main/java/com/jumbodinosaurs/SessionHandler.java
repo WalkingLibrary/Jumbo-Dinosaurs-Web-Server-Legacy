@@ -15,7 +15,7 @@ public class SessionHandler implements Runnable
     public void run()
     {
         HTTPRequest request = new HTTPRequest(this.session.getMessage());
-        if(request.isHTTP())
+        if (request.isHTTP())
         {
             request.generateMessage(this.dataIO);
         }
@@ -29,7 +29,7 @@ public class SessionHandler implements Runnable
         {
             System.out.println("Message Sent to Client: \n" + request.getMessageToSend());
             this.session.send(request.getMessageToSend());
-            if(request.isPictureRequest())
+            if (request.isPictureRequest())
             {
                 this.session.send(request.getPictureContents());
             }
